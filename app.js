@@ -2,23 +2,44 @@
 const $ = (sel, el=document) => el.querySelector(sel);
 const $$ = (sel, el=document) => Array.from(el.querySelectorAll(sel));
 
-// ===== preencher exemplo (igual ao original) =====
+// ===== helpers de data (3 campos: DD, MM, AAAA) =====
+function readDateParts(prefix){
+  const d = parseInt(($("#"+prefix+"Dia")?.value||"").trim(), 10);
+  const m = parseInt(($("#"+prefix+"Mes")?.value||"").trim(), 10);
+  const y = parseInt(($("#"+prefix+"Ano")?.value||"").trim(), 10);
+  if (!Number.isInteger(d) || !Number.isInteger(m) || !Number.isInteger(y)) return "";
+  if (y < 1900 || y > 2100 || m < 1 || m > 12 || d < 1 || d > 31) return "";
+  // validação simples para meses/dias (inclui fevereiro bissexto)
+  const dt = new Date(y, m-1, d);
+  if (dt.getFullYear() !== y || dt.getMonth() !== (m-1) || dt.getDate() !== d) return "";
+  // retorna formato ISO yyyy-mm-dd
+  return `${String(y).padStart(4,'0')}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+}
+
+function setDateParts(prefix, yyyy_mm_dd){
+  if (!yyyy_mm_dd) return;
+  const [y,m,d] = yyyy_mm_dd.split("-").map(v => parseInt(v,10));
+  if (!y || !m || !d) return;
+  $("#"+prefix+"Dia") && ($("#"+prefix+"Dia").value = String(d).padStart(2,'0'));
+  $("#"+prefix+"Mes") && ($("#"+prefix+"Mes").value = String(m).padStart(2,'0'));
+  $("#"+prefix+"Ano") && ($("#"+prefix+"Ano").value = String(y));
+}
+
+// ===== preencher exemplo =====
 $("#btnPreencherExemplo")?.addEventListener("click", () => {
   $("#nome").value = "MARIA DAS DORES SILVA";
   $("#nacionalidade").value = "brasileira";
   $("#estadoCivil").value = "solteiro(a)";
   $("#profissao").value = "autônoma";
-  $("#dataNascimento").value = "1992-08-15";
+  setDateParts("dataNascimento", "1992-08-15");
   $("#doc").value = "123.456.789-00";
-  $("#dataExpedicao").value = "2010-05-12";
+  setDateParts("dataExpedicao", "2010-05-12");
   $("#orgao").value = "SSP/AM";
   $("#filho1").value = "JOÃO CARLOS SILVA";
   $("#filho2").value = "MARIA APARECIDA SILVA";
   $("#endereco").value = "Rua Exemplo, 123 - Centro, Coari/AM";
   $("#telefone").value = "(92) 99999-0000";
-  $("#dataDeclaracao").value = new Date().toISOString().slice(0,10);
-  $("#cidade").value = "Coari";
-  $("#uf").value = "AM";
+  setDateParts("dataDeclaracao", new Date().toISOString().slice(0,10));
 
   // Finalidades
   $$(".opt").forEach(c => c.checked = false);
@@ -29,23 +50,31 @@ $("#btnPreencherExemplo")?.addEventListener("click", () => {
   render();
 });
 
-// ===== renderização (igual base) =====
+// ===== botão Hoje para Data da Declaração =====
+$("#btnHojeDecl")?.addEventListener("click", () => {
+  const d = new Date();
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth()+1).padStart(2,'0');
+  const dd = String(d.getDate()).padStart(2,'0');
+  setDateParts("dataDeclaracao", `${yyyy}-${mm}-${dd}`);
+  render();
+});
+
+// ===== renderização =====
 function render(){
   const nome = $("#nome").value.trim();
   const nacionalidade = $("#nacionalidade").value.trim() || "brasileiro (a)";
   const estadoCivil = $("#estadoCivil").value.trim();
   const profissao = $("#profissao").value.trim();
-  const nasc = formatDate($("#dataNascimento").value);
+  const nasc = formatDate(readDateParts("dataNascimento"));
   const doc = $("#doc").value.trim();
-  const dataExp = formatDate($("#dataExpedicao").value);
+  const dataExp = formatDate(readDateParts("dataExpedicao"));
   const orgao = $("#orgao").value.trim();
   const filho1 = $("#filho1").value.trim();
   const filho2 = $("#filho2").value.trim();
   const endereco = $("#endereco").value.trim();
   const telefone = $("#telefone").value.trim();
-  const cidade = $("#cidade").value.trim() || "Coari";
-  const uf = ($("#uf").value.trim() || "AM").toUpperCase();
-  const dataDecl = formatDate($("#dataDeclaracao").value);
+  const dataDecl = formatDate(readDateParts("dataDeclaracao"));
 
   const mark = v => v ? "(  X  )" : "(     )";
   const get = key => $$(".opt").find(c => c.value === key)?.checked || false;
@@ -81,7 +110,7 @@ function render(){
       Profissão: ${lineOrText(profissao,200)}, nascido(a) no dia: ${lineOrText(nasc,160)}, portador (a) do RG ou CPF nº 
       ${lineOrText(doc,220)}, expedida em ${lineOrText(dataExp,160)} por ${lineOrText(orgao,200)}, filho(a) de 
       ${lineOrText(filho1,420)} e de ${lineOrText(filho2,420)}, residente e domiciliado (a) 
-      ${lineOrText(endereco,640)} telefone: ${lineOrText(telefone,200)}, cidade de ${lineOrText(cidade.toUpperCase(),140)}, UF: ${lineOrText(uf,80)}.
+      ${lineOrText(endereco,640)} telefone: ${lineOrText(telefone,200)}.
     </p>
 
     <p class="tight">Abaixo assinado, declaro sob penas de Lei, que não possuo recursos econômicos para arcar com o valor de emolumentos, sem prejuízo do meu sustento e de minha família,</p>
@@ -114,7 +143,7 @@ function escapeHTML(s){
   return (s||"").replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[m]));
 }
 
-// ===== MODIFICADO: informações em negrito =====
+// ===== informações em negrito nas variáveis =====
 function lineOrText(text, minWidth){
   const t = (text||"").trim();
   if(!t){
@@ -145,10 +174,27 @@ function checarFinalidadeObrigatoria(){
   return $$(".opt").some(c => c.checked);
 }
 
+function validarDataGrupo(prefix){
+  const iso = readDateParts(prefix);
+  const ok = !!iso;
+  // aplica estado de validação visual nos 3 campos
+  const g = document.querySelector(`.date-3[data-group='${prefix}']`);
+  if (g){
+    g.querySelectorAll("input").forEach(inp => {
+      inp.setCustomValidity(ok ? "" : "Data inválida");
+    });
+  }
+  return ok;
+}
+
 function camposObrigatoriosValidos(){
   const form = $("#formDeclaracao");
   if (!form) return true;
-  const valid = form.checkValidity();
+  // valida data de nascimento, expedição e declaração
+  const okN = validarDataGrupo("dataNascimento");
+  const okE = validarDataGrupo("dataExpedicao");
+  const okD = validarDataGrupo("dataDeclaracao");
+  const valid = form.checkValidity() && okN && okE && okD;
   form.classList.add("was-validated");
   return valid;
 }
@@ -210,3 +256,12 @@ $("#btnGerarPDF")?.addEventListener("click", async () => {
     btn.querySelector(".btn-spinner").classList.add("d-none");
   }
 });
+
+// Prefill data da declaração com hoje (mantém conforto)
+(function prefillHoje(){
+  const d = new Date();
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth()+1).padStart(2,'0');
+  const dd = String(d.getDate()).padStart(2,'0');
+  setDateParts("dataDeclaracao", `${yyyy}-${mm}-${dd}`);
+})();
