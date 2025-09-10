@@ -103,7 +103,7 @@ function render(){
   const destino = $("#renderDestino");
   destino.innerHTML = `
     <div class="doc-body">
-    <h1 class="title">D DE INSUFICIÊNCIA ECONÔMICA</h1>
+    <h1 class="title">DECLARAÇÃO DE INSUFICIÊNCIA ECONÔMICA</h1>
 
     <p class="para-group">
       Eu, ${lineOrText(nome,480)}, ${escapeHTML(nacionalidade)}, estado civil: ${lineOrText(estadoCivil,160)}, 
