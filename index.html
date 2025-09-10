@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-bs-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Declaração de Insuficiência Econômica — Preenchimento e PDF</title>
+
+  <!-- Bootstrap 5 (dark) -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+  <!-- Ícones Bootstrap (para feedbacks visuais) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+
+  <!-- App CSS (mantém dark mode custom + ajustes) -->
+  <link rel="stylesheet" href="styles.css"/>
+
+  <!-- jsPDF & html2canvas (para gerar PDF idêntico) -->
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+</head>
+<body class="bg-body text-body">
+  <!-- Toasts / Alerts -->
+  <div class="position-fixed top-0 end-0 p-3" style="z-index: 1080">
+    <div id="toastAviso" class="toast align-items-center text-bg-danger border-0" role="alert" aria-live="assertive" aria-atomic="true">
+      <div class="d-flex">
+        <div class="toast-body" id="toastMsg">
+          Há pendências no formulário.
+        </div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Fechar"></button>
+      </div>
+    </div>
+  </div>
+
+  <header class="app-header container-fluid py-3 border-bottom">
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+      <h1 class="h4 m-0 d-flex align-items-center gap-2">
+        <i class="bi bi-file-earmark-text"></i>
+        Declaração de Insuficiência Econômica
+      </h1>
+      <div class="actions d-flex gap-2">
+        <button id="btnPreencherExemplo" class="btn btn-outline-light">
+          <i class="bi bi-magic"></i> Preencher Exemplo
+        </button>
+        <button id="btnGerarPDF" class="btn btn-primary">
+          <span class="btn-label"><i class="bi bi-printer"></i> Gerar PDF</span>
+          <span class="btn-spinner spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="layout container my-3">
+    <!-- Painel de formulário (tema escuro) -->
+    <section class="panel form-panel p-3">
+      <h2 class="h6 mb-3">Dados do Requerente</h2>
+
+      <form id="formDeclaracao" novalidate>
+        <div class="grid row g-3">
+          <div class="col-12 col-md-6">
+            <label class="form-label">Nome completo</label>
+            <input id="nome" type="text" class="form-control" placeholder="Digite o nome completo" required />
+            <div class="invalid-feedback">Informe o nome completo.</div>
+          </div>
+
+          <div class="col-12 col-md-6">
+            <label class="form-label">Nacionalidade</label>
+            <input id="nacionalidade" type="text" class="form-control" value="brasileiro (a)" required />
+            <div class="invalid-feedback">Informe a nacionalidade.</div>
+          </div>
+
+          <div class="col-12 col-md-6">
+            <label class="form-label">Estado civil</label>
+            <select id="estadoCivil" class="form-select" required>
+              <option value="">Selecione...</option>
+              <option>solteiro(a)</option>
+              <option>casado(a)</option>
+              <option>divorciado(a)</option>
+              <option>viúvo(a)</option>
+              <option>união estável</option>
+              <option>separado(a)</option>
+            </select>
+            <div class="invalid-feedback">Selecione o estado civil.</div>
+          </div>
+
+          <div class="col-12 col-md-6">
+            <label class="form-label">Profissão</label>
+            <input id="profissao" type="text" class="form-control" placeholder="ex.: autônomo(a)" required />
+            <div class="invalid-feedback">Informe a profissão.</div>
+          </div>
+
+          <div class="col-12 col-md-6">
+            <label class="form-label">Data de nascimento</label>
+            <input id="dataNascimento" type="date" class="form-control" required />
+            <div class="invalid-feedback">Informe a data de nascimento.</div>
+          </div>
+
+          <div class="col-12 col-md-6">
+            <label class="form-label">RG ou CPF</label>
+            <input id="doc" type="text" class="form-control" placeholder="RG ou CPF" required />
+            <div class="invalid-feedback">Informe o RG ou CPF.</div>
+          </div>
+
+          <div class="col-12 col-md-6">
+            <label class="form-label">Data de expedição</label>
+            <input id="dataExpedicao" type="date" class="form-control" required />
+            <div class="invalid-feedback">Informe a data de expedição.</div>
+          </div>
+
+          <div class="col-12 col-md-6">
+            <label class="form-label">Órgão expedidor</label>
+            <input id="orgao" type="text" class="form-control" placeholder="ex.: SSP/AM, DETRAN/AM" required />
+            <div class="invalid-feedback">Informe o órgão expedidor.</div>
+          </div>
+
+          <div class="col-12 col-md-6">
+            <label class="form-label">Filho(a) de (1º genitor)</label>
+            <input id="filho1" type="text" class="form-control" placeholder="Nome da mãe ou do pai" required />
+            <div class="invalid-feedback">Informe o nome do primeiro genitor.</div>
+          </div>
+
+          <div class="col-12 col-md-6">
+            <label class="form-label">e de (2º genitor)</label>
+            <input id="filho2" type="text" class="form-control" placeholder="Nome do(a) outro(a) genitor(a)" required />
+            <div class="invalid-feedback">Informe o nome do segundo genitor.</div>
+          </div>
+
+          <div class="col-12">
+            <label class="form-label">Endereço (rua/av, nº, bairro, cidade/UF)</label>
+            <input id="endereco" type="text" class="form-control" placeholder="Endereço completo" required />
+            <div class="invalid-feedback">Informe o endereço completo.</div>
+          </div>
+
+          <div class="col-12 col-md-6">
+            <label class="form-label">Telefone</label>
+            <input id="telefone" type="text" class="form-control" placeholder="(92) 9 9999-9999" />
+          </div>
+        </div>
+
+        <hr class="my-4 border-secondary">
+
+        <h2 class="h6 mb-3">Finalidade</h2>
+        <div class="checks d-flex flex-column gap-2">
+          <div class="form-check">
+            <input class="form-check-input opt" type="checkbox" value="certNasc" id="optCertNasc">
+            <label class="form-check-label" for="optCertNasc">Minha Certidão de Nascimento</label>
+          </div>
+          <div class="form-check">
+            <input class="form-check-input opt" type="checkbox" value="certCas" id="optCertCas">
+            <label class="form-check-label" for="optCertCas">Casamento</label>
+          </div>
+          <div class="form-check">
+            <input class="form-check-input opt" type="checkbox" value="certNascTeor" id="optCertNascTeor">
+            <label class="form-check-label" for="optCertNascTeor">Minha Certidão de Nascimento de Teor</label>
+          </div>
+
+          <div class="row g-2 align-items-center">
+            <div class="col-12 col-md">
+              <div class="form-check">
+                <input class="form-check-input opt" type="checkbox" value="certNegativaSimples" id="optCertNegativaSimples">
+                <label class="form-check-label" for="optCertNegativaSimples">Certidão Negativa de</label>
+              </div>
+            </div>
+            <div class="col-12 col-md-6">
+              <input id="certNegativaDe" type="text" class="form-control" placeholder="especifique..." />
+            </div>
+          </div>
+
+          <div class="row g-2">
+            <div class="col-12 col-md-4">
+              <div class="form-check">
+                <input class="form-check-input opt" type="checkbox" value="certNascimento" id="optCertNascimento">
+                <label class="form-check-label" for="optCertNascimento">Certidão de Nascimento</label>
+              </div>
+            </div>
+            <div class="col-12 col-md-4">
+              <div class="form-check">
+                <input class="form-check-input opt" type="checkbox" value="certInteiroTeor" id="optCertInteiroTeor">
+                <label class="form-check-label" for="optCertInteiroTeor">Certidão de Inteiro Teor</label>
+              </div>
+            </div>
+            <div class="col-12 col-md-4">
+              <div class="form-check">
+                <input class="form-check-input opt" type="checkbox" value="certNegativa" id="optCertNegativa">
+                <label class="form-check-label" for="optCertNegativa">Certidão Negativa</label>
+              </div>
+            </div>
+          </div>
+
+          <div class="row g-2 align-items-center">
+            <div class="col-12 col-md">
+              <div class="form-check">
+                <input class="form-check-input opt" type="checkbox" value="filho" id="optFilho">
+                <label class="form-check-label" for="optFilho">do meu filho(a):</label>
+              </div>
+            </div>
+            <div class="col-12 col-md-6">
+              <input id="nomeFilho" type="text" class="form-control" placeholder="Nome do(a) filho(a)"/>
+            </div>
+            <div class="col-6 col-md-2">
+              <input id="idadeFilho" type="number" min="0" class="form-control" placeholder="idade"/>
+            </div>
+          </div>
+
+          <div class="row g-2 align-items-center">
+            <div class="col-12 col-md">
+              <div class="form-check">
+                <input class="form-check-input opt" type="checkbox" value="neto" id="optNeto">
+                <label class="form-check-label" for="optNeto">do meu neto(a):</label>
+              </div>
+            </div>
+            <div class="col-12 col-md-6">
+              <input id="nomeNeto" type="text" class="form-control" placeholder="Nome do(a) neto(a)"/>
+            </div>
+            <div class="col-6 col-md-2">
+              <input id="idadeNeto" type="number" min="0" class="form-control" placeholder="idade"/>
+            </div>
+          </div>
+
+          <div class="row g-2 align-items-center">
+            <div class="col-12 col-md">
+              <div class="form-check">
+                <input class="form-check-input opt" type="checkbox" value="retificacao" id="optRetificacao">
+                <label class="form-check-label" for="optRetificacao">Retificação Extrajudicial:</label>
+              </div>
+            </div>
+            <div class="col-12 col-md-8">
+              <input id="retificacao" type="text" class="form-control" placeholder="descreva a retificação"/>
+            </div>
+          </div>
+        </div>
+
+        <hr class="my-4 border-secondary">
+
+        <div class="grid row g-3">
+          <div class="col-12 col-md-4">
+            <label class="form-label">Data da declaração</label>
+            <input id="dataDeclaracao" type="date" class="form-control" required />
+            <div class="invalid-feedback">Informe a data da declaração.</div>
+          </div>
+          <div class="col-12 col-md-4" >
+            <label class="form-label">Cidade</label>
+            <input id="cidade" type="text" class="form-control" value="Coari" required />
+            <div class="invalid-feedback">Informe a cidade.</div>
+          </div>
+          <div class="col-12 col-md-4">
+            <label class="form-label">UF</label>
+            <select id="uf" class="form-select" required>
+              <option value="">UF...</option>
+              <option value="AC">AC</option><option value="AL">AL</option><option value="AP">AP</option>
+              <option value="AM" selected>AM</option><option value="BA">BA</option><option value="CE">CE</option>
+              <option value="DF">DF</option><option value="ES">ES</option><option value="GO">GO</option>
+              <option value="MA">MA</option><option value="MT">MT</option><option value="MS">MS</option>
+              <option value="MG">MG</option><option value="PA">PA</option><option value="PB">PB</option>
+              <option value="PR">PR</option><option value="PE">PE</option><option value="PI">PI</option>
+              <option value="RJ">RJ</option><option value="RN">RN</option><option value="RS">RS</option>
+              <option value="RO">RO</option><option value="RR">RR</option><option value="SC">SC</option>
+              <option value="SP">SP</option><option value="SE">SE</option><option value="TO">TO</option>
+            </select>
+            <div class="invalid-feedback">Selecione a UF.</div>
+          </div>
+        </div>
+      </form>
+    </section>
+
+    <!-- Painel de pré-visualização (A4 idêntico ao PDF original) -->
+    <section class="panel preview-panel p-3">
+      <div class="d-flex align-items-center justify-content-between mb-3">
+        <h2 class="h6 mb-0">Pré-visualização (A4)</h2>
+        <span class="text-secondary small">Conteúdo idêntico ao PDF</span>
+      </div>
+      <div id="sheetA4" class="sheet">
+        <div class="sheet-inner" id="renderDestino">
+          <!-- Conteúdo renderizado via JS -->
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="app-footer container-fluid py-3 border-top text-center text-secondary small">
+   © 2025 Sistema para Geração de Declaração de Insuficiência Econômica . Todos os direitos reservados. <br>
+  Desenvolvido por Luiz Breno da Frota.
+  </footer>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
+  <!-- App JS -->
+  <script src="app.js"></script>
+</body>
+</html>
