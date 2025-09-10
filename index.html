@@ -87,10 +87,15 @@
             <div class="invalid-feedback">Informe a profissão.</div>
           </div>
 
+          <!-- Data de nascimento (3 campos) -->
           <div class="col-12 col-md-6">
             <label class="form-label">Data de nascimento</label>
-            <input id="dataNascimento" type="date" class="form-control" required />
-            <div class="invalid-feedback">Informe a data de nascimento.</div>
+            <div class="date-3" data-group="dataNascimento">
+              <input id="dataNascimentoDia" type="number" class="form-control" placeholder="DD" min="1" max="31" required>
+              <input id="dataNascimentoMes" type="number" class="form-control" placeholder="MM" min="1" max="12" required>
+              <input id="dataNascimentoAno" type="number" class="form-control" placeholder="AAAA" min="1900" max="2100" required>
+            </div>
+            <div class="invalid-feedback">Informe uma data válida.</div>
           </div>
 
           <div class="col-12 col-md-6">
@@ -99,10 +104,15 @@
             <div class="invalid-feedback">Informe o RG ou CPF.</div>
           </div>
 
+          <!-- Data de expedição (3 campos) -->
           <div class="col-12 col-md-6">
             <label class="form-label">Data de expedição</label>
-            <input id="dataExpedicao" type="date" class="form-control" required />
-            <div class="invalid-feedback">Informe a data de expedição.</div>
+            <div class="date-3" data-group="dataExpedicao">
+              <input id="dataExpedicaoDia" type="number" class="form-control" placeholder="DD" min="1" max="31" required>
+              <input id="dataExpedicaoMes" type="number" class="form-control" placeholder="MM" min="1" max="12" required>
+              <input id="dataExpedicaoAno" type="number" class="form-control" placeholder="AAAA" min="1900" max="2100" required>
+            </div>
+            <div class="invalid-feedback">Informe uma data válida.</div>
           </div>
 
           <div class="col-12 col-md-6">
@@ -231,31 +241,21 @@
         <hr class="my-4 border-secondary">
 
         <div class="grid row g-3">
-          <div class="col-12 col-md-4">
-            <label class="form-label">Data da declaração</label>
-            <input id="dataDeclaracao" type="date" class="form-control" required />
-            <div class="invalid-feedback">Informe a data da declaração.</div>
-          </div>
-          <div class="col-12 col-md-4" >
-            <label class="form-label">Cidade</label>
-            <input id="cidade" type="text" class="form-control" value="Coari" required />
-            <div class="invalid-feedback">Informe a cidade.</div>
-          </div>
-          <div class="col-12 col-md-4">
-            <label class="form-label">UF</label>
-            <select id="uf" class="form-select" required>
-              <option value="">UF...</option>
-              <option value="AC">AC</option><option value="AL">AL</option><option value="AP">AP</option>
-              <option value="AM" selected>AM</option><option value="BA">BA</option><option value="CE">CE</option>
-              <option value="DF">DF</option><option value="ES">ES</option><option value="GO">GO</option>
-              <option value="MA">MA</option><option value="MT">MT</option><option value="MS">MS</option>
-              <option value="MG">MG</option><option value="PA">PA</option><option value="PB">PB</option>
-              <option value="PR">PR</option><option value="PE">PE</option><option value="PI">PI</option>
-              <option value="RJ">RJ</option><option value="RN">RN</option><option value="RS">RS</option>
-              <option value="RO">RO</option><option value="RR">RR</option><option value="SC">SC</option>
-              <option value="SP">SP</option><option value="SE">SE</option><option value="TO">TO</option>
-            </select>
-            <div class="invalid-feedback">Selecione a UF.</div>
+          <!-- Data da declaração (3 campos) + botão Hoje -->
+          <div class="col-12 col-md-6">
+            <div class="d-flex justify-content-between align-items-center">
+              <label class="form-label m-0">Data da declaração</label>
+              <button id="btnHojeDecl" type="button" class="btn btn-sm btn-outline-secondary">
+                <i class="bi bi-calendar-date"></i> Hoje
+              </button>
+            </div>
+            <div class="date-3 mt-2" data-group="dataDeclaracao">
+              <input id="dataDeclaracaoDia" type="number" class="form-control" placeholder="DD" min="1" max="31" required>
+              <input id="dataDeclaracaoMes" type="number" class="form-control" placeholder="MM" min="1" max="12" required>
+              <input id="dataDeclaracaoAno" type="number" class="form-control" placeholder="AAAA" min="1900" max="2100" required>
+            </div>
+            <div class="form-text">Dica: use o botão “Hoje” para preencher rapidamente.</div>
+            <div class="invalid-feedback">Informe uma data válida.</div>
           </div>
         </div>
       </form>
