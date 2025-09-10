@@ -60,3 +60,7 @@ body{
   .preview-panel .sheet{ padding:10px; }
   .sheet-inner{ width:660px; min-height:940px; padding:24px 28px; }
 }
+
+/* ===== campos de data em 3 partes ===== */
+.date-3{display:grid;grid-template-columns:1fr 1fr 1.2fr;gap:8px}
+.date-3 input.form-control{text-align:center}
