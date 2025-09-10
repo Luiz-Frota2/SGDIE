@@ -154,6 +154,14 @@ function lineOrText(text, minWidth){
 
 function formatDate(v){
   if(!v) return "";
+  // Trate "YYYY-MM-DD" como data LOCAL (evita voltar 1 dia em fuso -03:00)
+  if (/^\d{4}-\d{2}-\d{2}$/.test(v)){
+    const [y,m,d] = v.split("-").map(Number);
+    const dd = String(d).padStart(2,'0');
+    const mm = String(m).padStart(2,'0');
+    const yyyy = y;
+    return `${dd}/${mm}/${yyyy}`;
+  }
   const d = new Date(v);
   if (isNaN(d.getTime())) return v;
   const dd = String(d.getDate()).padStart(2,'0');
@@ -161,6 +169,7 @@ function formatDate(v){
   const yyyy = d.getFullYear();
   return `${dd}/${mm}/${yyyy}`;
 }
+
 
 // Atualiza a visualização quando algo muda
 $$(".form-panel input, .form-panel .opt, .form-panel select").forEach(el => {
@@ -238,14 +247,14 @@ $("#btnGerarPDF")?.addEventListener("click", async () => {
     const pageWidth = pdf.internal.pageSize.getWidth();
     const pageHeight = pdf.internal.pageSize.getHeight();
 
-    const imgWidth = pageWidth;
-    const imgHeight = canvas.height * (imgWidth / canvas.width);
+    // Ajusta proporcionalmente para CABER na página (largura e altura)
+const scaleToFit = Math.min(pageWidth / canvas.width, pageHeight / canvas.height);
+const imgWidth = canvas.width * scaleToFit;
+const imgHeight = canvas.height * scaleToFit;
+const x = (pageWidth - imgWidth) / 2;
+const y = (pageHeight - imgHeight) / 2;
+pdf.addImage(imgData, "PNG", x, y, imgWidth, imgHeight, undefined, "FAST");
 
-    let y = 0;
-    if (imgHeight < pageHeight) {
-      y = (pageHeight - imgHeight) * 0.05;
-    }
-    pdf.addImage(imgData, "PNG", 0, y, imgWidth, imgHeight, undefined, "FAST");
     pdf.save("declaracao_insuficiencia_economica.pdf");
   } catch (e){
     console.error(e);
